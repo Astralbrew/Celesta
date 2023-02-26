@@ -52,6 +52,7 @@
     <Compile Include="Script\CodePieces\DataType.cs" />
     <Compile Include="Script\CodePieces\Function.cs" />
     <Compile Include="Script\CodePieces\ICodePiece.cs" />
+    <Compile Include="Script\CodePieces\Nop.cs" />
     <Compile Include="Script\CodePieces\UnaryExpression.cs" />
     <Compile Include="Script\CodePieces\Variable.cs" />
     <Compile Include="Script\Compile\CompileTimeContext.cs" />

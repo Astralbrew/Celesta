@@ -57,6 +57,6 @@ namespace Astralbrew.Celesta.Script.CodePieces
         }
 
         public override string ToString()
-            => $"{DataType}:{Value}";
+            => DataType == "String" ? $"{DataType}:\"{Value}\"" : $"{DataType}:{Value}";
     }
 }

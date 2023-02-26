@@ -46,7 +46,7 @@ namespace Astralbrew.Celesta
         {            
             var parser = new Parser(GetTokens(input), Context.CompileTimeContext);            
             parser.Parse();
-            parser.Stack.ToList().ForEach(Console.WriteLine);
+            //parser.Stack.ToList().ForEach(Console.WriteLine);
 
             return new CodePieceBuilder(Context.CompileTimeContext, parser.Stack).FetchCodePiece();            
         }        

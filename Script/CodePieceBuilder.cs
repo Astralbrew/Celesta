@@ -73,6 +73,53 @@ namespace Astralbrew.Celesta.Script
                 return block;
             }
 
+            if(token.IsPeriod)
+            {
+                // expect function
+                return FetchCodePiece();
+            }
+
+            if(token.IsKeywordNamed("endif"))
+            {
+                ICodePiece _cond = null;
+                ICodePiece _then = null;
+                ICodePiece _else = null;
+                //var cond = new Conditional()
+                var tk = Tokens.Peek();
+                if(tk.IsKeywordNamed("else"))
+                {
+                    Tokens.Pop();
+                    _else = FetchCodePiece();
+                    tk = Tokens.Peek();
+                }
+                if (tk.IsKeywordNamed("then"))
+                {
+                    Tokens.Pop();
+                    _then = FetchCodePiece();
+                    tk = Tokens.Peek();
+                }
+                if (tk.IsKeywordNamed("if"))
+                {
+                    Tokens.Pop();
+                    _cond = FetchCodePiece();                    
+                }                
+                return new Conditional(_cond, _then, _else);
+            }
+
+            if(token.IsKeywordNamed("id"))
+            {
+                return new Function("id", FetchCodePiece());
+            }
+
+            if(token.IsKeywordNamed("assign"))
+            {
+                ICodePiece id = FetchCodePiece();
+                ICodePiece sym_name = FetchCodePiece();
+                ICodePiece type = FetchCodePiece();
+                return new Nop();
+                Console.WriteLine($"ASSIGN {sym_name} {type}");
+            }
+
             throw new NotImplementedException();
         }
     }

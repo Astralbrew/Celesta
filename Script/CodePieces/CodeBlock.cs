@@ -30,9 +30,9 @@ namespace Astralbrew.Celesta.Script.CodePieces
                     pieces.AddRange(p.Content);
                 }
                 else pieces.Add(piece);
-            }
+            }            
 
-            Content = pieces.ToArray();
+            Content = pieces.Where(p=>p.GetType()!=typeof(Nop)).ToArray();
         }
 
         public CompileTimeType GetCompileTimeType(CompileTimeContext context) => CompileTimeType.Void;

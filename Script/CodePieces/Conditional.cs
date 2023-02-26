@@ -20,6 +20,15 @@ namespace Astralbrew.Celesta.Script.CodePieces
             ElseBranch = elseBranch;
         }
 
-        public CompileTimeType GetCompileTimeType(CompileTimeContext context) => CompileTimeType.Void;        
+        public CompileTimeType GetCompileTimeType(CompileTimeContext context) => CompileTimeType.Void;
+
+        public override string ToString()
+        {
+            string text = $"if({Condition}) then\n" +
+                $"{string.Join("\n", ThenBranch.ToString().Split('\n').Select(s => "  " + s))}\n";
+            string else_text = ElseBranch == null ? "" : "else\n" +
+                $"{string.Join("\n", ElseBranch.ToString().Split('\n').Select(s => "  " + s))}\n";
+            return text + else_text + "endif";
+        }
     }
 }
