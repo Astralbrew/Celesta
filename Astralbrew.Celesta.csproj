@@ -44,14 +44,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Script\CodePieceBuilder.cs" />
     <Compile Include="Script\CodePieces\BinaryExpression.cs" />
     <Compile Include="Script\CodePieces\CodeBlock.cs" />
     <Compile Include="Script\CodePieces\Conditional.cs" />
     <Compile Include="Script\CodePieces\ConstantValue.cs" />
+    <Compile Include="Script\CodePieces\DataType.cs" />
     <Compile Include="Script\CodePieces\Function.cs" />
     <Compile Include="Script\CodePieces\ICodePiece.cs" />
     <Compile Include="Script\CodePieces\UnaryExpression.cs" />
-    <Compile Include="Script\CodePieces\VariableValue.cs" />
+    <Compile Include="Script\CodePieces\Variable.cs" />
     <Compile Include="Script\Compile\CompileTimeContext.cs" />
     <Compile Include="Script\Compile\CompileTimeFunction.cs" />
     <Compile Include="Script\Compile\CompileTimeType.cs" />

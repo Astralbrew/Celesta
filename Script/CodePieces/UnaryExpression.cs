@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Astralbrew.Celesta.Script.CodePieces
 {
-    internal class UnaryExpression
+    internal class UnaryExpression : ICodePiece
     {
         public string Operator { get; }
         public ICodePiece Member { get; }
@@ -21,6 +21,11 @@ namespace Astralbrew.Celesta.Script.CodePieces
         public CompileTimeType GetCompileTimeType(CompileTimeContext context)
         {
             return context.GetOperatorType(Operator, Member.GetCompileTimeType(context));
+        }
+
+        public override string ToString()
+        {
+            return $"({Operator} {Member})";
         }
     }
 }

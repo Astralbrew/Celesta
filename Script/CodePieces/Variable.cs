@@ -7,26 +7,23 @@ using System.Threading.Tasks;
 
 namespace Astralbrew.Celesta.Script.CodePieces
 {
-    internal class Function : ICodePiece
+    internal class Variable : ICodePiece
     {
         public string Name { get; }
 
-        public ICodePiece[] Arguments { get; }
-
-        public Function(string name, params ICodePiece[] arguments)
+        public Variable(string name)
         {
             Name = name;
-            Arguments = arguments;
         }
 
         public CompileTimeType GetCompileTimeType(CompileTimeContext context)
         {
-            return context.GetFunctionType(Name, Arguments.Select(a => a.GetCompileTimeType(context)).ToArray());
+            return context.GetVariableType(Name);
         }
 
         public override string ToString()
         {
-            return $"{Name}({string.Join(", ", Arguments.ToList())})";
+            return $"Var:{Name}";
         }
     }
 }

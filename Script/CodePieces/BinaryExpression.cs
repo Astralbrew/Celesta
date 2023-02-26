@@ -25,5 +25,10 @@ namespace Astralbrew.Celesta.Script.CodePieces
             return context
                 .GetOperatorType(Operator, FirstMember.GetCompileTimeType(context), SecondMember.GetCompileTimeType(context));
         }
+
+        public override string ToString()
+        {
+            return $"({FirstMember} {Operator} {SecondMember})";
+        }
     }
 }

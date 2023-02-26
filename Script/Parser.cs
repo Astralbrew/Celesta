@@ -46,14 +46,32 @@ namespace Astralbrew.Celesta.Script
                 }*/
                 tk.Add(tokens[i]);
             }
-
             return tk;
         }
+
+        void DetectUnaryOperators()
+        {
+            if (Tokens.Count == 0)
+                return;
+            if (Tokens[0].IsOperator) (Tokens[0] as OperatorToken).MakeUnary();
+
+            for (int i = 1; i < Tokens.Count; i++)
+            {
+                if (Tokens[i].IsOperator)
+                {
+                    var tk = Tokens[i - 1];
+                    if (tk.IsOperator || tk.IsComma || tk.IsLeftParen || tk.IsInstructionSeparator || tk.IsKeyword)
+                        (Tokens[i] as OperatorToken).MakeUnary();
+                }
+            }
+        }
+        
 
         public Parser(List<InterpretedToken> tokens, CompileTimeContext context)
         {
             Context = context;
             Tokens = AddSeparators(tokens.Where(t => !t.IsSemicolon).ToList());
+            DetectUnaryOperators();
         }
 
         int Priority(InterpretedToken token)
@@ -95,17 +113,16 @@ namespace Astralbrew.Celesta.Script
         {            
             foreach(var token in Tokens)
             {
-                Console.WriteLine($"\n--- Parsing {token} ---");
+                //Console.WriteLine($"\n--- Parsing {token} ---");
                 NextToken(token);
 
-                Console.WriteLine("\n Stack: ");
+                /*Console.WriteLine("\n Stack: ");
                 Stack.ToList().ForEach(Console.WriteLine);
 
                 Console.WriteLine("\n Op: ");
-                OperatorStack.ToList().ForEach(Console.WriteLine);
-
+                OperatorStack.ToList().ForEach(Console.WriteLine);*/
             }
-            Console.WriteLine("\n\n");
+            //Console.WriteLine("\n\n");
             MoveAllFromOperatorStack();
         }       
 

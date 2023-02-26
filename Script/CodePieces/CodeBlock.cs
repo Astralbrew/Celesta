@@ -7,15 +7,39 @@ using System.Threading.Tasks;
 
 namespace Astralbrew.Celesta.Script.CodePieces
 {
-    internal class CodeBlock : ICodePiece
+    internal sealed class CodeBlock : ICodePiece
     {
-        public ICodePiece[] Content { get; }
+        public ICodePiece[] Content { get; internal set; }
 
-        public CodeBlock(ICodePiece[] content)
+        public CodeBlock(params ICodePiece[] content)
         {
             Content = content;
+            Flatten();
         }
 
-        public CompileTimeType GetCompileTimeType(CompileTimeContext context) => CompileTimeType.Void;        
+        public void Flatten()
+        {
+            List<ICodePiece> pieces = new List<ICodePiece>();
+
+            foreach (ICodePiece piece in Content)
+            {
+                if (piece.GetType() == typeof(CodeBlock))
+                {
+                    var p = (piece as CodeBlock);
+                    p.Flatten();
+                    pieces.AddRange(p.Content);
+                }
+                else pieces.Add(piece);
+            }
+
+            Content = pieces.ToArray();
+        }
+
+        public CompileTimeType GetCompileTimeType(CompileTimeContext context) => CompileTimeType.Void;
+
+        public override string ToString()
+        {
+            return string.Join("\n", Content.ToList().Select(c => c.ToString()));
+        }
     }
 }

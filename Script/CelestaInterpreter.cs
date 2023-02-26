@@ -1,5 +1,7 @@
 ﻿using Astralbrew.Celesta.Script;
+using Astralbrew.Celesta.Script.CodePieces;
 using Astralbrew.Celesta.Script.InterpretedEntities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -40,13 +42,13 @@ namespace Astralbrew.Celesta
         public List<InterpretedToken> GetTokens(string input)
             => SplitToTokens(input).Select(Context.GuessToken).ToList();
 
-        public List<InterpretedToken> Parse(string input)
+        public ICodePiece Parse(string input)
         {            
             var parser = new Parser(GetTokens(input), Context.CompileTimeContext);            
             parser.Parse();
-            var lst = parser.Stack.ToList();
-            //lst.Reverse();
-            return lst;
-        }
+            parser.Stack.ToList().ForEach(Console.WriteLine);
+
+            return new CodePieceBuilder(Context.CompileTimeContext, parser.Stack).FetchCodePiece();            
+        }        
     }
 }

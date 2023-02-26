@@ -7,13 +7,23 @@ using System.Threading.Tasks;
 
 namespace Astralbrew.Celesta.Script.CodePieces
 {
-    internal class VariableValue : ICodePiece
+    internal class DataType : ICodePiece
     {
-        public string Name { get; set; }
+        public string Name;
+
+        public DataType(string name)
+        {
+            Name = name;
+        }
 
         public CompileTimeType GetCompileTimeType(CompileTimeContext context)
         {
-            return context.GetVariableType(Name);
+            return new CompileTimeType("DataType");
+        }
+
+        public override string ToString()
+        {
+            return $"TypeId:{Name}";
         }
     }
 }

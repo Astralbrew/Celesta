@@ -2,7 +2,7 @@
 
 namespace Astralbrew.Celesta.Script.CodePieces
 {
-    internal interface ICodePiece
+    public interface ICodePiece
     {
         CompileTimeType GetCompileTimeType(CompileTimeContext context);
     }

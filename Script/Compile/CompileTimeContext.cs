@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Astralbrew.Celesta.Script.Compile
 {
-    internal class CompileTimeContext
+    public class CompileTimeContext
     {
         internal HashSet<CompileTimeType> DataTypes = new HashSet<CompileTimeType>();
         internal Dictionary<string, CompileTimeType> Variables = new Dictionary<string, CompileTimeType>();        
@@ -26,7 +26,7 @@ namespace Astralbrew.Celesta.Script.Compile
 
         public CompileTimeContext()
         {
-            RegisterDataTypes("Void", "Integer", "String", "Decimal");
+            RegisterDataTypes("Void", "Integer", "String", "Decimal", "DataType");
 
             RegisterConverter("Integer", "Decimal");
             RegisterConverter("Decimal", "Integer");
@@ -187,7 +187,19 @@ namespace Astralbrew.Celesta.Script.Compile
         {
             return Functions.Any(f => f.Name == name);
         }
+
+        public int GetFunctionArity(string fname)
+        {
+            var fun = Functions.Where(f => f.Name == fname).FirstOrDefault();
+            if (fun == null)
+                throw new ArgumentException($"Undefined function {fname}");
+            return fun.ArgumentTypes.Length;
+        }
         
+        public bool IsVariable(string name)
+        {
+            return Variables.ContainsKey(name);
+        }
 
     }
 }
