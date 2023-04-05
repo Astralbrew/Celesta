@@ -30,6 +30,12 @@ namespace Astralbrew.Celesta.Runtime
             return Variables[variable];
         }
 
+        private object GetValueOf(object obj, DataTypeDefinition dataType)
+        {
+            if (obj != null) return obj;
+            return dataType.DefaultValue;
+        }
+
         public override void RegisterOperator(OperatorDefinition definition, IRuntimeImplementation implementation)
         {
             var op = DefinitionContext.RegisterOperator(definition);
@@ -63,7 +69,7 @@ namespace Astralbrew.Celesta.Runtime
         public void ImportModule(Module module)
         {
             foreach(var op in module.Operators)            
-                RegisterOperator(op.Definition, op.Implementation);            
+                RegisterOperator(op.Definition, op.Implementation);
 
             foreach (var fn in module.Functions)
                 RegisterFunction(fn.Definition, fn.Implementation);
@@ -77,7 +83,7 @@ namespace Astralbrew.Celesta.Runtime
                 object last = null;
                 foreach (var child in block.GetNodes())
                 {
-                    last = Evaluate(child);
+                    last = GetValueOf(Evaluate(child), child.OutputType);
                 }
                 return last;
             }
@@ -106,7 +112,7 @@ namespace Astralbrew.Celesta.Runtime
             {
                 var fcall = syntaxTreeNode as FunctionNode;
                 object[] args = fcall.GetArguments().Select(this.Evaluate).ToArray();
-                return Functions[fcall.Function].Execute(args);
+                return GetValueOf(Functions[fcall.Function].Execute(args), fcall.OutputType);
             }
 
             if(syntaxTreeNode.Type== SyntaxTreeNodeType.Operator)
@@ -133,6 +139,21 @@ namespace Astralbrew.Celesta.Runtime
                 Variables[variable] = Evaluate(assignment.RightHandSide);
                 return Variables[variable];
             }
+
+            if(syntaxTreeNode.Type == SyntaxTreeNodeType.Conditional)
+            {
+                var node = syntaxTreeNode as ConditionalNode;
+
+                if (node.Condition.OutputType != PrimitiveTypes.Boolean) 
+                {
+                    throw new RuntimeException("Conditional expression must be of boolean type");
+                }
+                var cond = Evaluate(node.Condition);
+                if ((bool)cond == true)
+                    return Evaluate(node.ThenBranch);
+                else
+                    return Evaluate(node.ElseBranch);                
+            }
             return null;
         }
 
@@ -143,8 +164,9 @@ namespace Astralbrew.Celesta.Runtime
             {
                 var context = new RuntimeContext();
 
-                var Int = LanguageDefinition.PrimitiveTypes.Integer;
-                var Str = LanguageDefinition.PrimitiveTypes.String;
+                var Int = PrimitiveTypes.Integer;
+                var Str = PrimitiveTypes.String;
+                var Bool = PrimitiveTypes.Boolean;
 
                 context.RegisterOperator("-", Int, Int, a => -(int)a);
                 context.RegisterOperator("+", Int, Int, a => (int)a);
@@ -155,11 +177,16 @@ namespace Astralbrew.Celesta.Runtime
                 context.RegisterOperator("/", Int, Int, Int, (a, b) => (int)a / (int)b);
                 context.RegisterOperator("%", Int, Int, Int, (a, b) => (int)a % (int)b);
 
+                context.RegisterOperator("==", Int, Int, Bool, (a, b) => (int)a == (int)b);
+
+
+
                 context.RegisterOperator("+", Str, Str, Str, (a, b) => (string)a + (string)b);
                 context.RegisterOperator("*", Str, Int, Str, (a, b) => string.Concat(Enumerable.Repeat((string)a, (int)b)));
 
                 //context.RegisterFunction("abs", new DataTypeDefinition[] { Int }, Int, x => Math.Abs((int)x));
 
+                context.ImportModule(SystemModule.Module);
                 context.ImportModule(MathModule.Module);
 
                 return context;

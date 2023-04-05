@@ -13,6 +13,7 @@ namespace Astralbrew.Celesta.Utils
 
         public int GetHashCode(T[] obj)
         {
+            if (obj.Length == 0) return 0;
             return obj.Select(x => x.GetHashCode()).Aggregate((x, y) => x + y);
         }
     }

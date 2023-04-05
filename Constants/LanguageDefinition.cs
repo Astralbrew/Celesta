@@ -1,4 +1,5 @@
-﻿using Astralbrew.Celesta.Data.SymbolDefinitions;
+﻿using Astralbrew.Celesta.Data;
+using Astralbrew.Celesta.Data.SymbolDefinitions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,7 +26,8 @@ namespace Astralbrew.Celesta.Constants
             public static DataTypeDefinition Decimal => new DataTypeDefinition("decimal", (double)0);
             public static DataTypeDefinition String => new DataTypeDefinition("string", "");
             public static DataTypeDefinition Boolean => new DataTypeDefinition("bool", false);
-            public static DataTypeDefinition Void => new DataTypeDefinition("void");
+            public static DataTypeDefinition Void => new DataTypeDefinition("void", new NoOutput());
+            public static DataTypeDefinition Object => new DataTypeDefinition("object");
 
             public static IEnumerable<DataTypeDefinition> Enumerate()
                 => typeof(PrimitiveTypes).GetProperties(BindingFlags.Static | BindingFlags.Public)

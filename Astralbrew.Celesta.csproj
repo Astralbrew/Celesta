@@ -82,7 +82,10 @@
     <Compile Include="Runtime\IRuntimeImplementation.cs" />
     <Compile Include="Runtime\Module.cs" />
     <Compile Include="Runtime\Modules\MathModule.cs" />
+    <Compile Include="Runtime\Modules\SystemModule.cs" />
+    <Compile Include="Data\NoOutput.cs" />
     <Compile Include="Runtime\RuntimeContext.cs" />
+    <Compile Include="Runtime\RuntimeException.cs" />
     <Compile Include="Utils\ArraySequenceEqualityComparer.cs" />
     <Compile Include="Utils\StringUtils.cs" />
   </ItemGroup>
