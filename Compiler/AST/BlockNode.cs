@@ -8,7 +8,10 @@ namespace Astralbrew.Celesta.Compiler.AST
     {
         private readonly ISyntaxTreeNode[] Nodes;
 
-        public BlockNode() : base(SyntaxTreeNodeType.Block, LanguageDefinition.PrimitiveTypes.Void) { }
+        public BlockNode() : base(SyntaxTreeNodeType.Block, LanguageDefinition.PrimitiveTypes.Void) 
+        {
+            Nodes = new ISyntaxTreeNode[0];
+        }
 
         public BlockNode(ISyntaxTreeNode[] nodes)
             : base(SyntaxTreeNodeType.Block, nodes.Length > 0 ? LanguageDefinition.PrimitiveTypes.Void : nodes.Last().OutputType)

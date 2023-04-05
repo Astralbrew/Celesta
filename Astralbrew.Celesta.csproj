@@ -76,6 +76,8 @@
     <Compile Include="Data\SymbolDefinitions\VariableDefinition.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Runtime\Interpreter.cs" />
+    <Compile Include="Runtime\IRuntimeImplementation.cs" />
+    <Compile Include="Runtime\RuntimeContext.cs" />
     <Compile Include="Utils\ArraySequenceEqualityComparer.cs" />
     <Compile Include="Utils\StringUtils.cs" />
   </ItemGroup>

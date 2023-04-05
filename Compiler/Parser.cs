@@ -32,7 +32,7 @@ namespace Astralbrew.Celesta.Compiler
             AddPatternRule("@WHILE", "while @E do @CODE endwhile|end", "~while %1 %2");
 
             AddPatternRule("@IF", "if @E then @CODE else @CODE endif|end", "~if %1 %2 %3");
-            AddPatternRule("@IF", "if @E then @CODE endif|end", "~if %1 %2");
+            AddPatternRule("@IF", "if @E then @CODE endif|end", "~if %1 %2");            
 
             AddPatternRule("@DECL", "SYMBOL SYMBOL = @E", "~decl %1 %2 %3");
             AddPatternRule("@DECL", "SYMBOL SYMBOL", "~decl %1 %2");
@@ -72,6 +72,8 @@ namespace Astralbrew.Celesta.Compiler
             Cache.Clear();
             int pos = 0;
             var tokens = input.SplitToTokens();
+            if (tokens.Count == 0)
+                return new ParseTreeNode("~seq");
             var tree = Parse(0, tokens, ref pos);
             if (pos != tokens.Count) 
                 throw new ParseException("Parse error");

@@ -23,6 +23,8 @@ namespace Astralbrew.Celesta.Compiler
             var label = parseTreeNode.Label;
             if (parseTreeNode.IsTerminal)
             {
+                if (parseTreeNode.Label == "~seq")
+                    return new BlockNode();
                 if (Parser.IsSymbol(label))
                     return new VariableNode(Context.GetVariable(label, true));
                 else
