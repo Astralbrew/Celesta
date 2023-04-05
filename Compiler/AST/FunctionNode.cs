@@ -17,6 +17,8 @@ namespace Astralbrew.Celesta.Compiler.AST
         public FunctionDefinition Function { get; }
         ISyntaxTreeNode[] Arguments;
 
+        public ISyntaxTreeNode[] GetArguments() => Arguments.ToArray();
+
         public override string ToString()
         {
             return Function.Name + "(" + string.Join(", ", (IEnumerable<ISyntaxTreeNode>)Arguments) + ")";

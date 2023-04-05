@@ -75,6 +75,7 @@
     <Compile Include="Data\SymbolDefinitions\UnknownSymbolDefinition.cs" />
     <Compile Include="Data\SymbolDefinitions\VariableDefinition.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Runtime\Implementation\Operators\BinaryOperator.cs" />
     <Compile Include="Runtime\Interpreter.cs" />
     <Compile Include="Runtime\IRuntimeImplementation.cs" />
     <Compile Include="Runtime\RuntimeContext.cs" />

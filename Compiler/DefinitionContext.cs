@@ -62,7 +62,7 @@ namespace Astralbrew.Celesta.Compiler
             RegisterFunction(new FunctionDefinition(name, dtypes.Last(), dtypes.Take(dtypes.Count() - 1).ToArray()));
         }
 
-        public void RegisterOperator(OperatorDefinition op)
+        public OperatorDefinition RegisterOperator(OperatorDefinition op)
         {
             if (Operators.Contains(op))
             {
@@ -72,11 +72,12 @@ namespace Astralbrew.Celesta.Compiler
             op.GetArgumentTypes(includeOutput: true).ForEach(ValidateType);
 
             Operators.Add(op);
+            return op;
         }
 
-        public void RegisterOperator(string symbol, string type1, string type2, string typeO)
+        public OperatorDefinition RegisterOperator(string symbol, string type1, string type2, string typeO)
         {
-            RegisterOperator(new OperatorDefinition(symbol,
+            return RegisterOperator(new OperatorDefinition(symbol,
                 GetDataType(typeO, true),
                 GetDataType(type1, true),
                 GetDataType(type2, true)));

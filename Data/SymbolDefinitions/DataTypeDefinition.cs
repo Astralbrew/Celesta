@@ -4,7 +4,12 @@ namespace Astralbrew.Celesta.Data.SymbolDefinitions
 {
     public class DataTypeDefinition : AbstractSymbolDefinition
     {
-        public DataTypeDefinition(string name) : base(name) { }
+        public DataTypeDefinition(string name, object defaultValue = null) : base(name) 
+        {
+            DefaultValue = defaultValue;
+        }
+
+        public object DefaultValue { get; }
 
         public override bool Equals(object obj)
         {
@@ -24,5 +29,8 @@ namespace Astralbrew.Celesta.Data.SymbolDefinitions
 
         public static bool operator == (DataTypeDefinition d1, DataTypeDefinition d2) => Equals(d1, d2);
         public static bool operator !=(DataTypeDefinition d1, DataTypeDefinition d2) => !Equals(d1, d2);
+
+        public static bool operator ==(DataTypeDefinition d1, string typeName) => Equals(d1, new DataTypeDefinition(typeName));
+        public static bool operator !=(DataTypeDefinition d1, string typeName) => !Equals(d1, new DataTypeDefinition(typeName));
     }
 }

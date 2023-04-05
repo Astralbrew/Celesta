@@ -12,27 +12,27 @@ namespace Astralbrew.Celesta.Compiler.AST
         public OperatorNode(OperatorDefinition operatorDefinition, ISyntaxTreeNode param) 
             : base(SyntaxTreeNodeType.Operator, operatorDefinition.ResultType)
         {
-            OperatorDefinition = operatorDefinition;
+            Operator = operatorDefinition;
             Param1 = param;                        
         }
 
         public OperatorNode(OperatorDefinition operatorDefinition, ISyntaxTreeNode param1, ISyntaxTreeNode param2) 
             : base(SyntaxTreeNodeType.Operator, operatorDefinition.ResultType)
         {
-            OperatorDefinition = operatorDefinition;
+            Operator = operatorDefinition;
             Param1 = param1;
             Param2 = param2;            
         }
 
-        public OperatorDefinition OperatorDefinition { get; }        
+        public OperatorDefinition Operator { get; }        
         public ISyntaxTreeNode Param1 { get; }
         public ISyntaxTreeNode Param2 { get; }
 
         public override string ToString()
         {
-            if (OperatorDefinition.IsUnary)
-                return $"({OperatorDefinition.Name}{Param1})";
-            return $"({Param1} {OperatorDefinition.Name} {Param2})";
+            if (Operator.IsUnary)
+                return $"({Operator.Name}{Param1})";
+            return $"({Param1} {Operator.Name} {Param2})";
         }
     }
 }

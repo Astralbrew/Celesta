@@ -5,11 +5,23 @@ using System.Collections.Generic;
 
 namespace Astralbrew.Celesta.Runtime
 {
-    internal class Interpreter
+    public class Interpreter
     {
-        DefinitionContext DefinitionContext = new DefinitionContext();
+        private Parser Parser = new Parser();
+        public RuntimeContext RuntimeContext;
+        private SymbolSolver SymbolSolver;
 
-        Dictionary<OperatorDefinition, Func<string[], string>> Operators;
-        Dictionary<FunctionDefinition, Func<string[], string>> Functions;        
+        public Interpreter(RuntimeContext runtimeContext = null)
+        {
+            RuntimeContext = runtimeContext ?? new RuntimeContext();
+            SymbolSolver = new SymbolSolver(RuntimeContext.DefinitionContext);
+        }
+
+        public object Evaluate(string input)
+        {
+            var parseTree = Parser.Parse(input);
+            var syntaxTree = SymbolSolver.ToSyntaxTreeNode(parseTree);
+            return RuntimeContext.Evaluate(syntaxTree);
+        }
     }
 }

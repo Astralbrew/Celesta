@@ -56,6 +56,7 @@ namespace Astralbrew.Celesta.Compiler
             AddPatternRule("@T", "+ @T", "+u %1");
             AddPatternRule("@T", "- @T", "-u %1");
             AddPatternRule("@T", "@IF");
+            AddPatternRule("@T", "@ASSIGN");
             AddPatternRule("@T", "@FUN");
             AddPatternRule("@T", "LITERAL");
             AddPatternRule("@T", "SYMBOL");

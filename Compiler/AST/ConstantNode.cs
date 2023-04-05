@@ -12,9 +12,8 @@ namespace Astralbrew.Celesta.Compiler.AST
             DataType = OutputType;
         }
 
-        public ConstantNode(string value) : base(SyntaxTreeNodeType.Constant, GuessDataType(value)) 
-        {
-            Value = value;
+        public ConstantNode(string value) : this(value, GuessDataType(value)) 
+        {            
         }
 
         public string Value { get; }

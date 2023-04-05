@@ -21,10 +21,10 @@ namespace Astralbrew.Celesta.Constants
         public static class PrimitiveTypes
         {
             public static DataTypeDefinition DataType => new DataTypeDefinition("datatype");
-            public static DataTypeDefinition Integer => new DataTypeDefinition("int");
-            public static DataTypeDefinition Decimal => new DataTypeDefinition("decimal");
-            public static DataTypeDefinition String => new DataTypeDefinition("string");
-            public static DataTypeDefinition Boolean => new DataTypeDefinition("bool");
+            public static DataTypeDefinition Integer => new DataTypeDefinition("int", (int)0);
+            public static DataTypeDefinition Decimal => new DataTypeDefinition("decimal", (double)0);
+            public static DataTypeDefinition String => new DataTypeDefinition("string", "");
+            public static DataTypeDefinition Boolean => new DataTypeDefinition("bool", false);
             public static DataTypeDefinition Void => new DataTypeDefinition("void");
 
             public static IEnumerable<DataTypeDefinition> Enumerate()
