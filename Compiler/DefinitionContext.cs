@@ -44,7 +44,7 @@ namespace Astralbrew.Celesta.Compiler
             RegisterVariable(new VariableDefinition(name, GetDataType(type, true)));
         }
 
-        public void RegisterFunction(FunctionDefinition func)
+        public FunctionDefinition RegisterFunction(FunctionDefinition func)
         {
             if(Functions.Contains(func))
             {
@@ -54,12 +54,14 @@ namespace Astralbrew.Celesta.Compiler
             func.GetArgumentTypes(includeOutput:true).ForEach(ValidateType);
 
             Functions.Add(func);
+
+            return func;
         }
 
-        public void RegisterFunction(string name, params string[] types)
+        public FunctionDefinition RegisterFunction(string name, params string[] types)
         {
             var dtypes = types.Select(t => GetDataType(t, true)).ToArray();
-            RegisterFunction(new FunctionDefinition(name, dtypes.Last(), dtypes.Take(dtypes.Count() - 1).ToArray()));
+            return RegisterFunction(new FunctionDefinition(name, dtypes.Last(), dtypes.Take(dtypes.Count() - 1).ToArray()));
         }
 
         public OperatorDefinition RegisterOperator(OperatorDefinition op)
@@ -81,6 +83,13 @@ namespace Astralbrew.Celesta.Compiler
                 GetDataType(typeO, true),
                 GetDataType(type1, true),
                 GetDataType(type2, true)));
+        }
+
+        public OperatorDefinition RegisterOperator(string symbol, string typeI, string typeO)
+        {
+            return RegisterOperator(new OperatorDefinition(symbol,
+                GetDataType(typeO, true),
+                GetDataType(typeI, true)));
         }
 
         private void ValidateType(DataTypeDefinition t)

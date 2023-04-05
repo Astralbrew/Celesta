@@ -1,7 +1,9 @@
 ﻿using Astralbrew.Celesta.Compiler;
 using Astralbrew.Celesta.Compiler.AST;
+using Astralbrew.Celesta.Constants;
 using Astralbrew.Celesta.Data.SymbolDefinitions;
-using Astralbrew.Celesta.Runtime.Implementation.Operators;
+using Astralbrew.Celesta.Runtime.Implementation;
+using Astralbrew.Celesta.Runtime.Modules;
 using Astralbrew.Celesta.Utils;
 using System;
 using System.CodeDom;
@@ -9,20 +11,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using static Astralbrew.Celesta.Constants.LanguageDefinition;
 
 namespace Astralbrew.Celesta.Runtime
 {
-    public class RuntimeContext
+    public class RuntimeContext : ImplementationsCollection
     {
         internal DefinitionContext DefinitionContext { get; } = new DefinitionContext();
 
         Dictionary<VariableDefinition, object> Variables = new Dictionary<VariableDefinition, object>();
-
-        Dictionary<FunctionDefinition, IRuntimeImplementation> Functions = new Dictionary<FunctionDefinition, IRuntimeImplementation>();
-
-        Dictionary<OperatorDefinition, IRuntimeImplementation> Operators = new Dictionary<OperatorDefinition, IRuntimeImplementation>();
-
+        
         private object GetValueOf(VariableDefinition variable)
         {
             if (Variables.ContainsKey(variable))
@@ -31,11 +30,44 @@ namespace Astralbrew.Celesta.Runtime
             return Variables[variable];
         }
 
-        public void RegisterOperator(string name, string argType1, string argType2, string outputType, IRuntimeImplementation implementation)
+        public override void RegisterOperator(OperatorDefinition definition, IRuntimeImplementation implementation)
         {
-            var op = DefinitionContext.RegisterOperator(name, argType1, argType2, outputType);
-            Operators[op] = implementation;            
+            var op = DefinitionContext.RegisterOperator(definition);
+            Operators[op] = implementation;
         }        
+
+        public override void RegisterOperator(string name, DataTypeDefinition argType1, DataTypeDefinition argType2, DataTypeDefinition outputType, IRuntimeImplementation implementation)
+        {
+            var op = DefinitionContext.RegisterOperator(name, argType1.Name, argType2.Name, outputType.Name);
+            Operators[op] = implementation;
+        }
+
+        public override void RegisterOperator(string name, DataTypeDefinition argType, DataTypeDefinition outputType, IRuntimeImplementation implementation)
+        {
+            var op = DefinitionContext.RegisterOperator(name, argType.Name, outputType.Name);
+            Operators[op] = implementation;
+        }
+
+        public override void RegisterFunction(string name, DataTypeDefinition[] argTypes, DataTypeDefinition outputType, IRuntimeImplementation implementation)
+        {
+            var fn = DefinitionContext.RegisterFunction(name, argTypes.Select(a => a.Name).Concat(new string[] { outputType.Name }).ToArray());
+            Functions[fn] = implementation;                     
+        }
+
+        public override void RegisterFunction(FunctionDefinition definition, IRuntimeImplementation implementation)
+        {
+            var fn = DefinitionContext.RegisterFunction(definition);
+            Functions[fn] = implementation;
+        }
+
+        public void ImportModule(Module module)
+        {
+            foreach(var op in module.Operators)            
+                RegisterOperator(op.Definition, op.Implementation);            
+
+            foreach (var fn in module.Functions)
+                RegisterFunction(fn.Definition, fn.Implementation);
+        }
 
         public virtual object Evaluate(ISyntaxTreeNode syntaxTreeNode)
         {
@@ -111,16 +143,27 @@ namespace Astralbrew.Celesta.Runtime
             {
                 var context = new RuntimeContext();
 
-                context.RegisterOperator("+", "int", "int", "int", new BinaryOperator(o => (int)o[0] + (int)o[1]));                
-                context.RegisterOperator("-", "int", "int", "int", new BinaryOperator(o => (int)o[0] - (int)o[1]));                
-                context.RegisterOperator("*", "int", "int", "int", new BinaryOperator(o => (int)o[0] * (int)o[1]));
-                context.RegisterOperator("/", "int", "int", "int", new BinaryOperator(o => (int)o[0] / (int)o[1]));
+                var Int = LanguageDefinition.PrimitiveTypes.Integer;
+                var Str = LanguageDefinition.PrimitiveTypes.String;
 
-                context.RegisterOperator("+", "string", "string", "string", new BinaryOperator(o => (string)o[0] + (string)o[1]));
-                context.RegisterOperator("*", "string", "int", "string", new BinaryOperator(o => string.Concat(Enumerable.Repeat((string)o[0], (int)o[1]))));
+                context.RegisterOperator("-", Int, Int, a => -(int)a);
+                context.RegisterOperator("+", Int, Int, a => (int)a);
+
+                context.RegisterOperator("+", Int, Int, Int, (a, b) => (int)a + (int)b);
+                context.RegisterOperator("-", Int, Int, Int, (a, b) => (int)a - (int)b);
+                context.RegisterOperator("*", Int, Int, Int, (a, b) => (int)a * (int)b);
+                context.RegisterOperator("/", Int, Int, Int, (a, b) => (int)a / (int)b);
+                context.RegisterOperator("%", Int, Int, Int, (a, b) => (int)a % (int)b);
+
+                context.RegisterOperator("+", Str, Str, Str, (a, b) => (string)a + (string)b);
+                context.RegisterOperator("*", Str, Int, Str, (a, b) => string.Concat(Enumerable.Repeat((string)a, (int)b)));
+
+                //context.RegisterFunction("abs", new DataTypeDefinition[] { Int }, Int, x => Math.Abs((int)x));
+
+                context.ImportModule(MathModule.Module);
 
                 return context;
             }
-        }
+        }        
     }
 }
