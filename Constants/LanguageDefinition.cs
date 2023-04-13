@@ -16,7 +16,8 @@ namespace Astralbrew.Celesta.Constants
 
         public static readonly string[] Keywords = new string[]
         {
-            "if", "then", "else", "endif", "while", "do", "endwhile", "for", "endfor", "end"
+            "if", "then", "else", "endif", "while", "do", "endwhile", "for", "endfor", "end",
+            "repeat", "endrepeat"
         };
 
         public static class PrimitiveTypes

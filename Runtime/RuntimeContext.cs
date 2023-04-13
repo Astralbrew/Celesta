@@ -165,6 +165,23 @@ namespace Astralbrew.Celesta.Runtime
                 return new NoOutput();
             }
 
+            if(syntaxTreeNode.Type == SyntaxTreeNodeType.RepeatN)
+            {
+                var node = syntaxTreeNode as RepeatNode;
+
+                if (node.NumberOfIterations.OutputType != PrimitiveTypes.Integer) 
+                {
+                    throw new RuntimeException("Repeated iterations count must be an integer type");                    
+                }
+                int count = (int)Evaluate(node.NumberOfIterations);
+
+                for (int i = 0; i < count; i++)
+                {
+                    Evaluate(node.LoopLogic);
+                }
+
+            }
+
             return null;
         }
 

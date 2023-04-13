@@ -10,6 +10,7 @@
         Assignment,
         Block,
         Conditional,
-        Loop
+        Loop,
+        RepeatN
     }
 }

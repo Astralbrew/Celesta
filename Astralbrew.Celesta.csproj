@@ -56,6 +56,7 @@
     <Compile Include="Compiler\AST\ISyntaxTreeNode.cs" />
     <Compile Include="Compiler\AST\LoopNode.cs" />
     <Compile Include="Compiler\AST\OperatorNode.cs" />
+    <Compile Include="Compiler\AST\RepeatNode.cs" />
     <Compile Include="Compiler\AST\SyntaxTree.cs" />
     <Compile Include="Compiler\AST\SyntaxTreeNodeType.cs" />
     <Compile Include="Compiler\AST\VariableNode.cs" />

@@ -24,12 +24,14 @@ namespace Astralbrew.Celesta.Compiler
 
             AddPatternRule("@INSTR", "@C");
             AddPatternRule("@C", "@WHILE");
+            AddPatternRule("@C", "@REPEAT");
             AddPatternRule("@C", "@IF");
             AddPatternRule("@C", "@DECL");
             AddPatternRule("@C", "@ASSIGN");
             AddPatternRule("@C", "@E");
 
             AddPatternRule("@WHILE", "while @E do @SCOPE endwhile|end", "~while %1 %2");
+            AddPatternRule("@REPEAT", "repeat @E do @SCOPE endrepeat|end", "~repeat %1 %2");
 
             AddPatternRule("@IF", "if @E then @SCOPE else @SCOPE endif|end", "~if %1 %2 %3");
             AddPatternRule("@IF", "if @E then @SCOPE endif|end", "~if %1 %2");            

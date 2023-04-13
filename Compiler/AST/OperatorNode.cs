@@ -13,7 +13,8 @@ namespace Astralbrew.Celesta.Compiler.AST
             : base(SyntaxTreeNodeType.Operator, operatorDefinition.ResultType)
         {
             Operator = operatorDefinition;
-            Param1 = param;                        
+            Param1 = param;
+            Param1.Parent = this;
         }
 
         public OperatorNode(OperatorDefinition operatorDefinition, ISyntaxTreeNode param1, ISyntaxTreeNode param2) 

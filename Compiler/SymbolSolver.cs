@@ -103,6 +103,12 @@ namespace Astralbrew.Celesta.Compiler
                 var _loop = ToSyntaxTreeNode(parseTreeNode.Children[1]);
                 return new LoopNode(_cond, _loop);
             }
+            if(label=="~repeat")
+            {
+                var _noIterations = ToSyntaxTreeNode(parseTreeNode.Children[0]);
+                var _loop = ToSyntaxTreeNode(parseTreeNode.Children[1]);
+                return new RepeatNode(_noIterations, _loop);
+            }
             if(label=="~fun")
             {
                 var args = parseTreeNode.Children.Skip(1).Select(t => ToSyntaxTreeNode(t));
