@@ -14,6 +14,8 @@ namespace Astralbrew.Celesta.Compiler.AST
         {
             Symbol = symbol;
             RightHandSide = rhs;
+            if(rhs!=null)
+                rhs.Parent = this;
         }
 
         public VariableDefinition Symbol { get; }

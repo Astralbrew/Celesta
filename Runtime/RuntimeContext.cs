@@ -5,6 +5,7 @@ using Astralbrew.Celesta.Data.SymbolDefinitions;
 using Astralbrew.Celesta.Runtime.Modules;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using static Astralbrew.Celesta.Constants.LanguageDefinition;
 
 namespace Astralbrew.Celesta.Runtime
@@ -95,7 +96,7 @@ namespace Astralbrew.Celesta.Runtime
                 if (constant.DataType == PrimitiveTypes.Decimal)
                     return double.Parse(constant.Value);
                 if (constant.DataType == PrimitiveTypes.String)
-                    return constant.Value.Substring(1, constant.Value.Length - 2); // drop " "
+                    return Regex.Unescape(constant.Value.Substring(1, constant.Value.Length - 2)); // drop " "
                 if (constant.DataType == PrimitiveTypes.Boolean) 
                     return constant.Value == "true";
                 return null;

@@ -22,6 +22,8 @@ namespace Astralbrew.Celesta.Compiler.AST
         {
             ScopeName = scopeName;
             Nodes = nodes.ToArray();
+            foreach (var n in nodes)
+                n.Parent = this;
         }
 
         public int NodesCount => Nodes.Length;

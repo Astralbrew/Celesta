@@ -14,15 +14,10 @@ namespace Astralbrew.Celesta.Compiler
 
         public Parser()
         {
-            AddPatternRule("@CODE", "@SCOPE");
+            AddPatternRule("@CODE", "@SCOPE");            
 
-            /*AddPatternRule("@SCOPE", "@INSTR ; @SCOPE", "~scope %1 %2");
-            AddPatternRule("@SCOPE", "@INSTR ;");
-            AddPatternRule("@SCOPE", "@INSTR");*/
-
-            //AddPatternRule("@SCOPE", "@INSTR ; ?? @INSTR", "^*SCOPE");
-            //AddPatternRule("@SCOPE", "@INSTR ; ?? @INSTR ;", "^*SCOPE");            
-            AddPatternRule("@SCOPE", "@INSTR", "^*SCOPE");       
+            AddPatternRule("@SCOPE", "@INSTR ; ?? @INSTR ;", "^*SCOPE");
+            AddPatternRule("@SCOPE", "@E", "^*SCOPE");
 
             AddPatternRule("@LIST", "@E, @LIST", "~list %1 %2");
             AddPatternRule("@LIST", "@E", "~list %1");
@@ -76,35 +71,39 @@ namespace Astralbrew.Celesta.Compiler
         }
         
         internal void AddPatternRule(string Key, string Pattern, string TreeBuild = "")
-        {            
-            Rules.Add((Key, Pattern.Split(' '), TreeBuild.Split(' ').Where(s => s != "").ToArray()));           
+        {
+            Rules.Add((Key, Pattern.Split(' '), TreeBuild.Split(' ').Where(s => s != "").ToArray()));
         }
+
+        int SessionId = 0;
+        int ScopeId = 0;
 
         public ParseTreeNode Parse(string input)
         {
             Cache.Clear();
+            SessionId++;
+            ScopeId = 0;
             int pos = 0;
             var tokens = input.SplitToTokens();
             if (tokens.Count == 0)
-                return new ParseTreeNode("~scope");
+                return new ParseTreeNode("~scope") { ScopeName = "@main" };
             var tree = Parse(0, tokens, ref pos);
+            if (tree == null)
+                throw new ParseException("Parse tree is null");
+            tree.ScopeName = "@main";
+            tree.FixScopes();
+            //Console.WriteLine(tree?.ToString() ?? "<NULL>");
             if (pos != tokens.Count) 
-                throw new ParseException("Parse error");
+                throw new ParseException("Parse error");           
 
-            /*Console.WriteLine(tree?.ToString() ?? "<NULL>");
-
-            var tree2 = tree.Flatten();
-
-            Console.WriteLine(tree2?.ToString() ?? "<NULL>");*/
-
-            return tree;
+            return tree.Flatten();
         }    
 
-        Dictionary<string, (ParseTreeNode Node, int Pos)> Cache = new Dictionary<string, (ParseTreeNode Node, int Pos)>();
+        Dictionary<string, (ParseTreeNode Node, int Pos)> Cache = new Dictionary<string, (ParseTreeNode Node, int Pos)>();        
 
         private ParseTreeNode Parse(int ruleId, List<string> tokens, ref int pos, int stack = 0)
         {
-            var cacheKey = $"{Rules[ruleId].Key}!{pos}";
+            var cacheKey = $"{Rules[ruleId].Key}!{pos}";            
             if (Cache.ContainsKey(cacheKey)) 
             {
                 pos = Cache[cacheKey].Pos;
@@ -210,8 +209,9 @@ namespace Astralbrew.Celesta.Compiler
 
                 if (i == pattern2.Count - 1) 
                 {
-                    pos = tmppos;
+                    pos = tmppos;                    
                     solution = BuildParseTreeNode(treeBuild, children, guesses, pos, cacheKey);
+
                     if(reptSplit.Count()>0)
                     {
                         //Console.WriteLine("Extending");
@@ -244,8 +244,8 @@ namespace Astralbrew.Celesta.Compiler
             }
 
             if(treeBuild.Length==1 && treeBuild[0]== "^*SCOPE")
-            {  
-                return new ParseTreeNode("~scope", children.ToArray());
+            {                
+                return new ParseTreeNode("~scope", children.ToArray()) { ScopeName = $"@S{SessionId}_{ScopeId++}" };
             }
 
             string label = treeBuild[0];

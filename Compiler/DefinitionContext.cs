@@ -116,9 +116,19 @@ namespace Astralbrew.Celesta.Compiler
 
         public DataTypeDefinition GetDataType(string name, bool throwOnNotFound = false)
             => GetDefinition(DataTypes, d => d.Name == name, throwOnNotFound, name);
-        public VariableDefinition GetVariable(string name, bool throwOnNotFound = false)
-            => GetDefinition(Variables, v => v.Name == name, throwOnNotFound, name);
+        public VariableDefinition GetVariable(string fullName, bool throwOnNotFound = false)
+            => GetDefinition(Variables, v => v.Name == fullName, throwOnNotFound, fullName);
 
+        public VariableDefinition GetVariable(string name, string scope, bool throwOnNotFound = false)
+        {
+            var result = Variables.Where(v => scope.StartsWith(string.Join("", v.Name.SkipWhile(c => c != '@')))
+                && string.Join("", v.Name.TakeWhile(c => c != '@')) == name)
+                .OrderBy(v => -v.Name.Length) // b@main, b@main@S1_1 <-- the last matters
+                .FirstOrDefault();
+            if (throwOnNotFound && result == null)
+                throw new IdenitifierNotFoundException($"Variable out of scope : {name}");
+            return result;
+        }            
 
         public OperatorDefinition GetOperator(string name, DataTypeDefinition argType1, DataTypeDefinition argType2,
             bool throwOnNotFound = false)

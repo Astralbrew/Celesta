@@ -21,6 +21,7 @@ namespace Astralbrew.Celesta.Runtime
         {
             var parseTree = Parser.Parse(input);
             var syntaxTree = SymbolSolver.ToSyntaxTreeNode(parseTree);
+            //Console.WriteLine(syntaxTree);
             return RuntimeContext.Evaluate(syntaxTree);
         }
     }

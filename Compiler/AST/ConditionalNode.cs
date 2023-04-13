@@ -11,6 +11,9 @@ namespace Astralbrew.Celesta.Compiler.AST
             Condition = condition;
             ThenBranch = thenBranch;
             ElseBranch = null;
+
+            Condition.Parent = this;
+            ThenBranch.Parent = this;            
         }
 
         public ConditionalNode(ISyntaxTreeNode condition, ISyntaxTreeNode thenBranch, ISyntaxTreeNode elseBranch)
@@ -22,6 +25,10 @@ namespace Astralbrew.Celesta.Compiler.AST
             Condition = condition;
             ThenBranch = thenBranch;
             ElseBranch = elseBranch;
+
+            Condition.Parent = this;
+            ThenBranch.Parent = this;
+            ElseBranch.Parent = this;
         }
 
         public ISyntaxTreeNode Condition { get; }

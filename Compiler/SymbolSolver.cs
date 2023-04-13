@@ -18,16 +18,16 @@ namespace Astralbrew.Celesta.Compiler
             Context = context;
         }
 
-        public ISyntaxTreeNode ToSyntaxTreeNode(ParseTreeNode parseTreeNode, string scope = "")
+        public ISyntaxTreeNode ToSyntaxTreeNode(ParseTreeNode parseTreeNode)
         {
             if (parseTreeNode == null) return null;
             var label = parseTreeNode.Label;
             if (parseTreeNode.IsTerminal)
             {
                 if (parseTreeNode.Label == "~scope")
-                    return new BlockNode(scope);
+                    return new BlockNode(parseTreeNode.ScopeName);
                 if (Parser.IsSymbol(label))
-                    return new VariableNode(Context.GetVariable(label, true));
+                    return new VariableNode(Context.GetVariable(label, parseTreeNode.ScopeName, true));
                 else
                     return new ConstantNode(label);
             }
@@ -35,9 +35,8 @@ namespace Astralbrew.Celesta.Compiler
             {
                 var member1 = ToSyntaxTreeNode(parseTreeNode.Children[0]);
                 var member2 = ToSyntaxTreeNode(parseTreeNode.Children[1]);
-
                 var oper = Context.GetOperator(label, member1.OutputType, member2.OutputType, true);
-                return new OperatorNode(oper, member1, member2);                
+                return new OperatorNode(oper, member1, member2); ; 
             }
             if(label=="+u" || label=="-u")
             {
@@ -58,7 +57,7 @@ namespace Astralbrew.Celesta.Compiler
                 else*/ if (parseTreeNode.Children.Length == 3)
                 {
                     string type = parseTreeNode.Children[0].Label;
-                    string name = parseTreeNode.Children[1].Label;
+                    string name = parseTreeNode.Children[1].Label + parseTreeNode.ScopeName;
                     var value = parseTreeNode.Children[2];
                     Context.RegisterVariable(name, type);
                     return new AssignNode(Context.GetVariable(name, true), ToSyntaxTreeNode(value));
@@ -68,7 +67,7 @@ namespace Astralbrew.Celesta.Compiler
             }
             if(label=="~assign")
             {
-                var v = Context.GetVariable(parseTreeNode.Children[0].Label, true);
+                var v = Context.GetVariable(parseTreeNode.Children[0].Label, parseTreeNode.ScopeName, true);
                 var rhs = ToSyntaxTreeNode(parseTreeNode.Children[1]);
                 return new AssignNode(v, rhs);
             }
@@ -79,7 +78,7 @@ namespace Astralbrew.Celesta.Compiler
                 {
                     instrs.Add(ToSyntaxTreeNode(child));
                 }
-                return new BlockNode(scope, instrs.ToArray());
+                return new BlockNode(parseTreeNode.ScopeName, instrs.ToArray());
             }
             if(label=="~if")
             {
@@ -107,8 +106,8 @@ namespace Astralbrew.Celesta.Compiler
             if(label=="~fun")
             {
                 var args = parseTreeNode.Children.Skip(1).Select(t => ToSyntaxTreeNode(t));
-                var datatypes = args.Select(st => st.OutputType);
-                var func = Context.GetFunction(parseTreeNode.Children[0].Label, datatypes.ToArray(), true);
+                var datatypes = args.Select(st => st.OutputType).ToArray();
+                var func = Context.GetFunction(parseTreeNode.Children[0].Label, datatypes, true);
                 return new FunctionNode(func, args.ToArray());
             }
 

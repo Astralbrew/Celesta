@@ -9,6 +9,7 @@ namespace Astralbrew.Celesta.Compiler.AST
 {
     internal abstract class AbstractNode : ISyntaxTreeNode
     {
+        public ISyntaxTreeNode Parent { get; set; }
         public SyntaxTreeNodeType Type { get; }
         public DataTypeDefinition OutputType { get; }
         protected AbstractNode(SyntaxTreeNodeType type, DataTypeDefinition outputType)

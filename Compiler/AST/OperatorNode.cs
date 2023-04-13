@@ -21,7 +21,9 @@ namespace Astralbrew.Celesta.Compiler.AST
         {
             Operator = operatorDefinition;
             Param1 = param1;
-            Param2 = param2;            
+            Param2 = param2;
+            Param1.Parent = this;
+            Param2.Parent = this;
         }
 
         public OperatorDefinition Operator { get; }        

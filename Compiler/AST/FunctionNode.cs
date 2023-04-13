@@ -12,6 +12,11 @@ namespace Astralbrew.Celesta.Compiler.AST
         {
             Function = function;
             Arguments = aruments.ToArray();
+
+            foreach(var a in Arguments)
+            {
+                a.Parent = this;
+            }
         }
 
         public FunctionDefinition Function { get; }

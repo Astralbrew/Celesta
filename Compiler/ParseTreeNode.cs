@@ -7,6 +7,9 @@ namespace Astralbrew.Celesta.Compiler
     public class ParseTreeNode
     {
         public string Label { get; set; }
+
+        public string ScopeName { get; set; } = "";
+
         public ParseTreeNode[] Children { get; set; }
 
         public ParseTreeNode(string label, ParseTreeNode[] children)
@@ -28,7 +31,7 @@ namespace Astralbrew.Celesta.Compiler
                 .Select(s => string.Join("\n", s.Split('\n').Where(x => x != "").Select(x => "  " + x)))
                 .ToArray();
 
-            return $"{Label}\n{string.Join("\n", chstr)}";
+            return $"{Label}{(Label == "~scope" ? ScopeName : "")}\n{string.Join("\n", chstr)}";
         }
 
         public ParseTreeNode Flatten()
@@ -37,18 +40,21 @@ namespace Astralbrew.Celesta.Compiler
             {
                 var first = Children[0].Flatten();
                 var second = Children[1].Flatten();
-                return new ParseTreeNode(Label, new ParseTreeNode[] { first }.Concat(second.Children).ToArray());
-            }           
-
-            if (Label == "~scope" && Children.Length == 2 && Children[1].Label == "~scope") 
-            {
-                var first = Children[0].Flatten();
-                var second = Children[1].Flatten();
-                return new ParseTreeNode("~scope", new ParseTreeNode[] { first }.Concat(second.Children).ToArray());
+                return new ParseTreeNode(Label, new ParseTreeNode[] { first }.Concat(second.Children).ToArray()) { ScopeName = ScopeName };
             }
+            return new ParseTreeNode(Label, Children.Select(x => x.Flatten()).ToArray()) { ScopeName = ScopeName };
 
-            return new ParseTreeNode(Label, Children.Select(x => x.Flatten()).ToArray());
+        }
 
+        public void FixScopes(string currentScope = "")
+        {
+            //if(Label=="~scope")
+            {
+                ScopeName = currentScope + ScopeName;
+                currentScope = ScopeName;
+            }
+            foreach (var c in Children)
+                c.FixScopes(currentScope);
         }
     }    
 }

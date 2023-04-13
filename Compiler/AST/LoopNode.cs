@@ -9,7 +9,10 @@ namespace Astralbrew.Celesta.Compiler.AST
             : base(SyntaxTreeNodeType.Loop, LanguageDefinition.PrimitiveTypes.Void)
         {
             RunningCondition = runningCondition;
-            LoopLogic = loopLogic;            
+            LoopLogic = loopLogic;
+
+            RunningCondition.Parent = this;
+            LoopLogic.Parent = this;
         }
         public ISyntaxTreeNode RunningCondition { get; }
         public ISyntaxTreeNode LoopLogic { get; }
