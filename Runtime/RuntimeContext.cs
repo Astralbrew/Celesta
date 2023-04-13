@@ -1,17 +1,10 @@
 ﻿using Astralbrew.Celesta.Compiler;
 using Astralbrew.Celesta.Compiler.AST;
-using Astralbrew.Celesta.Constants;
+using Astralbrew.Celesta.Data;
 using Astralbrew.Celesta.Data.SymbolDefinitions;
-using Astralbrew.Celesta.Runtime.Implementation;
 using Astralbrew.Celesta.Runtime.Modules;
-using Astralbrew.Celesta.Utils;
-using System;
-using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 using static Astralbrew.Celesta.Constants.LanguageDefinition;
 
 namespace Astralbrew.Celesta.Runtime
@@ -154,6 +147,23 @@ namespace Astralbrew.Celesta.Runtime
                 else
                     return Evaluate(node.ElseBranch);                
             }
+
+            if(syntaxTreeNode.Type==SyntaxTreeNodeType.Loop)
+            {
+                var node = syntaxTreeNode as LoopNode;
+
+                if (node.RunningCondition.OutputType != PrimitiveTypes.Boolean) 
+                {
+                    throw new RuntimeException("Conditional expression must be of boolean type");
+                }
+
+                while ((bool)Evaluate(node.RunningCondition)) 
+                {
+                    Evaluate(node.LoopLogic);
+                }
+                return new NoOutput();
+            }
+
             return null;
         }
 
@@ -178,6 +188,11 @@ namespace Astralbrew.Celesta.Runtime
                 context.RegisterOperator("%", Int, Int, Int, (a, b) => (int)a % (int)b);
 
                 context.RegisterOperator("==", Int, Int, Bool, (a, b) => (int)a == (int)b);
+                context.RegisterOperator("!=", Int, Int, Bool, (a, b) => (int)a != (int)b);
+                context.RegisterOperator("<", Int, Int, Bool, (a, b) => (int)a < (int)b);
+                context.RegisterOperator("<=", Int, Int, Bool, (a, b) => (int)a <= (int)b);
+                context.RegisterOperator(">", Int, Int, Bool, (a, b) => (int)a > (int)b);
+                context.RegisterOperator(">=", Int, Int, Bool, (a, b) => (int)a >= (int)b);
 
 
 

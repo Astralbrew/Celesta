@@ -40,11 +40,11 @@ namespace Astralbrew.Celesta.Compiler
                 return new ParseTreeNode(Label, new ParseTreeNode[] { first }.Concat(second.Children).ToArray());
             }           
 
-            if (Label == "~seq" && Children.Length == 2 && Children[1].Label == "~seq") 
+            if (Label == "~scope" && Children.Length == 2 && Children[1].Label == "~scope") 
             {
                 var first = Children[0].Flatten();
                 var second = Children[1].Flatten();
-                return new ParseTreeNode("~seq", new ParseTreeNode[] { first }.Concat(second.Children).ToArray());
+                return new ParseTreeNode("~scope", new ParseTreeNode[] { first }.Concat(second.Children).ToArray());
             }
 
             return new ParseTreeNode(Label, Children.Select(x => x.Flatten()).ToArray());

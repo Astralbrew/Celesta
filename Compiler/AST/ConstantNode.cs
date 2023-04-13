@@ -30,7 +30,7 @@ namespace Astralbrew.Celesta.Compiler.AST
             if (value.MatchesCStyleString())
                 return LanguageDefinition.PrimitiveTypes.String;
             throw new ConstantIdentificationException($"Failed to guess data type for constant value '{value}'");
-        }
+        }        
 
         public override string ToString() => Value;        
     }

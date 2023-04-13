@@ -14,13 +14,18 @@ namespace Astralbrew.Celesta.Compiler
 
         public Parser()
         {
-            AddPatternRule("@CODE", "@CODE1");
-            AddPatternRule("@CODE1", "@INSTR ; @CODE1", "~seq %1 %2");
-            AddPatternRule("@CODE1", "@INSTR ;");
-            AddPatternRule("@CODE1", "@INSTR");
+            AddPatternRule("@CODE", "@SCOPE");
 
-            AddPatternRule("@LIST", "@CODE , @LIST", "~list %1 %2");
-            AddPatternRule("@LIST", "@CODE", "~list %1");
+            /*AddPatternRule("@SCOPE", "@INSTR ; @SCOPE", "~scope %1 %2");
+            AddPatternRule("@SCOPE", "@INSTR ;");
+            AddPatternRule("@SCOPE", "@INSTR");*/
+
+            //AddPatternRule("@SCOPE", "@INSTR ; ?? @INSTR", "^*SCOPE");
+            //AddPatternRule("@SCOPE", "@INSTR ; ?? @INSTR ;", "^*SCOPE");            
+            AddPatternRule("@SCOPE", "@INSTR", "^*SCOPE");       
+
+            AddPatternRule("@LIST", "@E, @LIST", "~list %1 %2");
+            AddPatternRule("@LIST", "@E", "~list %1");
 
             AddPatternRule("@INSTR", "@C");
             AddPatternRule("@C", "@WHILE");
@@ -29,10 +34,10 @@ namespace Astralbrew.Celesta.Compiler
             AddPatternRule("@C", "@ASSIGN");
             AddPatternRule("@C", "@E");
 
-            AddPatternRule("@WHILE", "while @E do @CODE endwhile|end", "~while %1 %2");
+            AddPatternRule("@WHILE", "while @E do @SCOPE endwhile|end", "~while %1 %2");
 
-            AddPatternRule("@IF", "if @E then @CODE else @CODE endif|end", "~if %1 %2 %3");
-            AddPatternRule("@IF", "if @E then @CODE endif|end", "~if %1 %2");            
+            AddPatternRule("@IF", "if @E then @SCOPE else @SCOPE endif|end", "~if %1 %2 %3");
+            AddPatternRule("@IF", "if @E then @SCOPE endif|end", "~if %1 %2");            
 
             AddPatternRule("@DECL", "SYMBOL SYMBOL = @E", "~decl %1 %2 %3");
             AddPatternRule("@DECL", "SYMBOL SYMBOL", "~decl %1 %2");
@@ -50,7 +55,9 @@ namespace Astralbrew.Celesta.Compiler
             operatorsRuleBuilder.AddLayer("<", "<=", ">", ">=");
             operatorsRuleBuilder.AddLayer("+", "-");
             operatorsRuleBuilder.AddLayer("*", "/", "%");
-            Rules.AddRange(operatorsRuleBuilder.GetRules("@E", "@T"));
+
+            operatorsRuleBuilder.GetRules("@E", "@T").ForEach(r =>
+                AddPatternRule(r.Key, string.Join(" ", r.Pattern), string.Join(" ", r.TreeBuild)));            
 
 
             AddPatternRule("@T", "+ @T", "+u %1");
@@ -60,12 +67,17 @@ namespace Astralbrew.Celesta.Compiler
             AddPatternRule("@T", "@FUN");
             AddPatternRule("@T", "LITERAL");
             AddPatternRule("@T", "SYMBOL");
-            AddPatternRule("@T", "( @E )");                        
+            AddPatternRule("@T", "( @E )");                     
+            
+            /*foreach(var r in Rules)
+            {
+                Console.WriteLine($"{r.Key} : {string.Join(" ", r.Pattern)}");
+            }*/
         }
         
         internal void AddPatternRule(string Key, string Pattern, string TreeBuild = "")
-        {
-            Rules.Add((Key, Pattern.Split(' '), TreeBuild.Split(' ').Where(s => s != "").ToArray()));
+        {            
+            Rules.Add((Key, Pattern.Split(' '), TreeBuild.Split(' ').Where(s => s != "").ToArray()));           
         }
 
         public ParseTreeNode Parse(string input)
@@ -74,13 +86,19 @@ namespace Astralbrew.Celesta.Compiler
             int pos = 0;
             var tokens = input.SplitToTokens();
             if (tokens.Count == 0)
-                return new ParseTreeNode("~seq");
+                return new ParseTreeNode("~scope");
             var tree = Parse(0, tokens, ref pos);
             if (pos != tokens.Count) 
                 throw new ParseException("Parse error");
-            return tree?.Flatten();
 
-        }
+            /*Console.WriteLine(tree?.ToString() ?? "<NULL>");
+
+            var tree2 = tree.Flatten();
+
+            Console.WriteLine(tree2?.ToString() ?? "<NULL>");*/
+
+            return tree;
+        }    
 
         Dictionary<string, (ParseTreeNode Node, int Pos)> Cache = new Dictionary<string, (ParseTreeNode Node, int Pos)>();
 
@@ -111,18 +129,30 @@ namespace Astralbrew.Celesta.Compiler
             List<string> guesses = new List<string>();
             List<ParseTreeNode> children = new List<ParseTreeNode>();
             int tmppos = pos;
-            for(int i=0;i<pattern.Length;i++)
+
+
+            var fixedSplit = pattern.TakeWhile(s => s != "??");
+            var reptSplit = pattern.SkipWhile(s => s != "??").Skip(1);
+
+            //Console.WriteLine($"Fixed = {string.Join(" ", fixedSplit)}");
+            //Console.WriteLine($"Reptt = {string.Join(" ", reptSplit)}");
+
+            var pattern2 = fixedSplit.ToList();
+            ParseTreeNode solution = null;
+
+            for(int i=0;i<pattern2.Count;i++)
             {
-                if (tmppos >= tokens.Count) return null;
-                string rule = pattern[i];
+                //Console.WriteLine(string.Join(" ", pattern2));
+                if (tmppos >= tokens.Count) return solution;
+                string rule = pattern2[i];
                 //Console.WriteLine($"\tPattern = {rule}");
-                //Console.WriteLine($"\tToken = {tokens[tmppos]}");
+                //Console.WriteLine($"\tToken = {tokens[tmppos]}");                
                 if (rule == "LITERAL") 
                 {
                     if (tmppos >= tokens.Count || !IsLiteral(tokens[tmppos])) 
                     {
                         ////Console.WriteLine("--Fail.");
-                        return null;
+                        return solution;
                     }
                     children.Add(new ParseTreeNode(tokens[tmppos]));
                     tmppos++;
@@ -132,7 +162,7 @@ namespace Astralbrew.Celesta.Compiler
                     if (tmppos >= tokens.Count || !IsSymbol(tokens[tmppos]))
                     {
                         ////Console.WriteLine("--Fail.");
-                        return null;
+                        return solution;
                     }
                     children.Add(new ParseTreeNode(tokens[tmppos]));
                     tmppos++;
@@ -141,8 +171,8 @@ namespace Astralbrew.Celesta.Compiler
                 {                    
                     if (tmppos >= tokens.Count) 
                     {
-                        ////Console.WriteLine("--Fail.");
-                        return null;
+                        ////Console.WriteLine("--Fail.");                       
+                        return solution;
                     }
                     //Console.WriteLine(String.Join(" ", rule.Split('|')));
                     var match = rule.Split('|').Where(r => r == tokens[tmppos]);
@@ -150,7 +180,7 @@ namespace Astralbrew.Celesta.Compiler
                     if(match.Count()==0)
                     {
                         ////Console.WriteLine("--Fail.");
-                        return null;
+                        return solution;
                     }
                     guesses.Add(match.First());
 
@@ -174,21 +204,52 @@ namespace Astralbrew.Celesta.Compiler
                     if (!ok)
                     {
                         ////Console.WriteLine("--Fail.");
-                        return null;
+                        return solution;
                     }
-                }                
+                }
+
+                if (i == pattern2.Count - 1) 
+                {
+                    pos = tmppos;
+                    solution = BuildParseTreeNode(treeBuild, children, guesses, pos, cacheKey);
+                    if(reptSplit.Count()>0)
+                    {
+                        //Console.WriteLine("Extending");
+                        pattern2.AddRange(reptSplit);
+                    }
+                }
             }
             
             pos = tmppos;
 
+            return solution;
+        }        
+
+        ParseTreeNode BuildParseTreeNode(string[] treeBuild, List<ParseTreeNode> children, List<string> guesses, int pos, string cacheKey)        
+        {
             if (treeBuild.Length == 0)
             {
                 Cache[cacheKey] = (children[0], pos);
                 return children[0];
             }
 
+            if (treeBuild.Length == 1 && treeBuild[0] == "^L*")
+            {
+                var result = children[0];
+                for (int i = 0; i < guesses.Count; i++)
+                {
+                    result = new ParseTreeNode(guesses[i], new ParseTreeNode[] { result, children[i + 1] });
+                }
+                return result;
+            }
+
+            if(treeBuild.Length==1 && treeBuild[0]== "^*SCOPE")
+            {  
+                return new ParseTreeNode("~scope", children.ToArray());
+            }
+
             string label = treeBuild[0];
-            if (label[0] == '^' && guesses.Count > 0) 
+            if (label[0] == '^' && guesses.Count > 0)
             {
                 label = guesses[int.Parse(label.Substring(1)) - 1];
             }
@@ -204,7 +265,7 @@ namespace Astralbrew.Celesta.Compiler
             Cache[cacheKey] = (treenode, pos);
             ////Console.WriteLine("OK");
             return treenode;
-        }        
+        }
 
         public static bool IsLiteral(string input)
         {
@@ -214,47 +275,6 @@ namespace Astralbrew.Celesta.Compiler
         public static bool IsSymbol(string input)
         {
             return !Keywords.Contains(input) && Regex.IsMatch(input, @"^[a-zA-Z_][a-zA-Z0-9]*$");
-        }
-
-
-        class OperatorsRuleBuilder
-        {
-            List<string[]> OperatorLayers = new List<string[]>();
-            public void AddLayer(params string[] layer) => OperatorLayers.Add(layer);
-
-
-            public List<(string Key, string[] Pattern, string[] TreeBuild)> GetRules(string expressionKey, string terminalKey)
-            {
-                var result = new List<(string Key, string[] Pattern, string[] TreeBuild)>();
-                string key0 = $"{expressionKey}0";
-                result.Add((expressionKey, new string[] { key0 }, new string[0]));
-
-                for (int i = 0; i < OperatorLayers.Count; i++)
-                {
-                    result.AddRange(GetLayerRules(i, expressionKey, terminalKey));
-                }
-
-                string keyN = $"{expressionKey}{OperatorLayers.Count}";
-
-                result.Add((keyN, new string[] { terminalKey }, new string[0]));
-
-                return result;
-            }
-
-            List<(string Key, string[] Pattern, string[] TreeBuild)> GetLayerRules(int layer, string expressionKey, string terminalKey)
-            {
-                var result = new List<(string Key, string[] Pattern, string[] TreeBuild)>();
-                string thisKey = $"{expressionKey}{layer}";
-                string nextKey = $"{expressionKey}{layer + 1}";
-
-                result.Add((thisKey,
-                    $"{nextKey} {string.Join("|", OperatorLayers[layer])} {thisKey}".Split(' '),
-                    "^1 %1 %2".Split(' ')));
-              
-                result.Add((thisKey, new string[] { nextKey }, new string[0]));
-                return result;
-            }
-        }
-
+        }      
     }
 }

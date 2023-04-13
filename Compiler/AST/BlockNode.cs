@@ -8,14 +8,19 @@ namespace Astralbrew.Celesta.Compiler.AST
     {
         private readonly ISyntaxTreeNode[] Nodes;
 
-        public BlockNode() : base(SyntaxTreeNodeType.Block, LanguageDefinition.PrimitiveTypes.Void) 
+        public string ScopeName { get; }
+
+        public BlockNode(string scopeName) : base(SyntaxTreeNodeType.Block, LanguageDefinition.PrimitiveTypes.Void)
         {
+            ScopeName = scopeName;
             Nodes = new ISyntaxTreeNode[0];
         }
 
-        public BlockNode(ISyntaxTreeNode[] nodes)
+
+        public BlockNode(string scopeName, ISyntaxTreeNode[] nodes)
             : base(SyntaxTreeNodeType.Block, nodes.Length > 0 ? LanguageDefinition.PrimitiveTypes.Void : nodes.Last().OutputType)
         {
+            ScopeName = scopeName;
             Nodes = nodes.ToArray();
         }
 
@@ -27,7 +32,7 @@ namespace Astralbrew.Celesta.Compiler.AST
 
         public override string ToString()
         {
-            return string.Join("\n", (IEnumerable<ISyntaxTreeNode>)Nodes);
+            return $"Scope@{ScopeName}\n" + string.Join("\n", (IEnumerable<ISyntaxTreeNode>)Nodes);
         }
     }
 }

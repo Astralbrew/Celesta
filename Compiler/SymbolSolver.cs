@@ -1,5 +1,6 @@
 ﻿using Astralbrew.Celesta.Compiler.AST;
 using Astralbrew.Celesta.Constants;
+using Astralbrew.Celesta.Data.SymbolDefinitions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,14 +18,14 @@ namespace Astralbrew.Celesta.Compiler
             Context = context;
         }
 
-        public ISyntaxTreeNode ToSyntaxTreeNode(ParseTreeNode parseTreeNode)
+        public ISyntaxTreeNode ToSyntaxTreeNode(ParseTreeNode parseTreeNode, string scope = "")
         {
             if (parseTreeNode == null) return null;
             var label = parseTreeNode.Label;
             if (parseTreeNode.IsTerminal)
             {
-                if (parseTreeNode.Label == "~seq")
-                    return new BlockNode();
+                if (parseTreeNode.Label == "~scope")
+                    return new BlockNode(scope);
                 if (Parser.IsSymbol(label))
                     return new VariableNode(Context.GetVariable(label, true));
                 else
@@ -46,13 +47,15 @@ namespace Astralbrew.Celesta.Compiler
             }
             if(label=="~decl")
             {
-                if (parseTreeNode.Children.Length == 2)
+                /*if (parseTreeNode.Children.Length == 2)
                 {
                     string type = parseTreeNode.Children[0].Label;
                     string name = parseTreeNode.Children[1].Label;
                     Context.RegisterVariable(name, type);
+                    DataTypeDefinition datatype = Context.GetDataType(type, true);
+                    return new AssignNode(Context.GetVariable(name, true), new ConstantNode(datatype.DefaultValue);
                 }
-                else if (parseTreeNode.Children.Length == 3)
+                else*/ if (parseTreeNode.Children.Length == 3)
                 {
                     string type = parseTreeNode.Children[0].Label;
                     string name = parseTreeNode.Children[1].Label;
@@ -69,14 +72,14 @@ namespace Astralbrew.Celesta.Compiler
                 var rhs = ToSyntaxTreeNode(parseTreeNode.Children[1]);
                 return new AssignNode(v, rhs);
             }
-            if(label=="~seq")
+            if(label=="~scope")
             {                
                 var instrs = new List<ISyntaxTreeNode>();
                 foreach(var child in parseTreeNode.Children)
                 {
                     instrs.Add(ToSyntaxTreeNode(child));
                 }
-                return new BlockNode(instrs.ToArray());
+                return new BlockNode(scope, instrs.ToArray());
             }
             if(label=="~if")
             {

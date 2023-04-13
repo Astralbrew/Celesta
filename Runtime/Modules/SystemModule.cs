@@ -35,6 +35,8 @@ namespace Astralbrew.Celesta.Runtime.Modules
                 return int.Parse(Console.ReadLine());
             });
 
+            _Module.RegisterFunction("str", new DataTypeDefinition[] { Int }, Str, val => val.ToString());
+
 
         }
 
