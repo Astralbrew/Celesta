@@ -3,8 +3,8 @@
     internal class Instruction : IAssemblyItem
     {
         public byte Opcode { get; }
-        public ISymbol Operand1 { get; }
-        public ISymbol Operand2 { get; }
+        public ISymbol Operand1 { get; internal set; }
+        public ISymbol Operand2 { get; internal set; }
         public Instruction(byte opcode, ISymbol operand1, ISymbol operand2)
         {
             Opcode = opcode;
@@ -21,7 +21,7 @@
 
         public override string ToString()
         {
-            var result = Opcodes.GetInstructionName(Opcode).PadRight(14, ' ');
+            var result = Opcodes.GetInstructionName(Opcode).PadRight(16, ' ');
 
             if(Operand1!=null)
             {

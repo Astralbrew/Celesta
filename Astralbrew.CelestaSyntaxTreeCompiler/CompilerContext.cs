@@ -102,12 +102,21 @@ namespace Astralbrew.CelestaSyntaxTreeCompiler
         {
             if (node is VariableNode v)
             {
-                return new List<IAssemblyItem> { new Instruction("push", new Symbol(v), null) };
+                var result = new List<IAssemblyItem> { new Instruction("push", new Symbol(v), null) };
+
+                if (v.OutputType == PrimitiveTypes.String && !(v.Parent is FunctionNode)) 
+                    result.Add(new Instruction("stack strclone"));
+                return result;
             }
 
             if (node is ConstantNode c)
             {
-                return new List<IAssemblyItem> { new Instruction("push", new Symbol(c), null) };
+                var result = new List<IAssemblyItem> { new Instruction("push", new Symbol(c), null) };
+
+                if (c.OutputType == PrimitiveTypes.String && !(c.Parent is FunctionNode))
+                    result.Add(new Instruction("stack strclone"));
+
+                return result;                
             }                
 
             if(node is BlockNode block)
@@ -116,7 +125,7 @@ namespace Astralbrew.CelestaSyntaxTreeCompiler
 
                 var items = block.GetNodes().Select(Assemble).SelectMany(l => l).ToList();
 
-                var consts = MemoryPool[block].Where(r => r.IsReadOnly).ToList();
+                var consts = MemoryPool[block].Where(r => r.IsReadOnly).ToList();                
 
                 foreach (var cst in consts) 
                 {
@@ -134,9 +143,34 @@ namespace Astralbrew.CelestaSyntaxTreeCompiler
                     }
                 }
 
-                result.AddRange(items);                
+                result.AddRange(items);
 
-                // alloc/dealloc ... 
+
+                foreach (var cst in consts)
+                {
+                    var nd = cst.Node as ConstantNode;
+                    var romsym = RomPool.Get(cst.Name, nd);
+
+                    if (nd.OutputType == PrimitiveTypes.String)
+                    {
+                        result.Add(new Instruction("dealloc", new Symbol(cst.Name, true)));
+
+                    }                   
+                }
+
+                var vars = MemoryPool[block].Where(r => !r.IsReadOnly).ToList();
+
+                foreach (var vrb in vars)
+                {
+                    var nd = vrb.Node as VariableNode;
+
+                    if (nd.OutputType == PrimitiveTypes.String)
+                    {
+                        result.Add(new Instruction("dealloc", new Symbol(vrb.Name, false)));
+
+                    }
+                }
+
                 return result;
             }
 
@@ -168,7 +202,10 @@ namespace Astralbrew.CelestaSyntaxTreeCompiler
 
                 if(lhs is VariableNode av)
                 {
-                    result.Add(new Instruction("pop", new Symbol(av)));
+                    if (assign.IsInExpression)
+                        result.Add(new Instruction("peek", new Symbol(av)));
+                    else
+                        result.Add(new Instruction("pop", new Symbol(av)));
                 }
                 else
                 {
@@ -221,10 +258,8 @@ namespace Astralbrew.CelestaSyntaxTreeCompiler
                 var result = new List<IAssemblyItem>();
                 result.AddRange(Assemble(rept.NumberOfIterations));
                 result.Add(startLabel);
-                result.Add(new Instruction("hybrid sub", new Symbol(new ConstantNode("1"))));
-                result.Add(new Instruction("push", new Symbol(new ConstantNode("0"))));
-                result.Add(new Instruction("peek test eq"));
-                result.Add(new Instruction("pop"));
+                result.Add(new Instruction("stack dec"));
+                result.Add(new Instruction("peek test zero"));                
                 result.Add(new Instruction("jt", endLabel));
                 result.AddRange(Assemble(rept.LoopLogic));
                 result.Add(new Instruction("jmp", startLabel));
@@ -248,14 +283,15 @@ namespace Astralbrew.CelestaSyntaxTreeCompiler
         {            
             syntaxTreeNode.Scan<VariableNode>(MemoryPool.AddRecord);
             syntaxTreeNode.Scan<ConstantNode>(MemoryPool.AddRecord);
-            MemoryPool.AddRecord(new ConstantNode("0"));
-            MemoryPool.AddRecord(new ConstantNode("1"));
+            //MemoryPool.AddRecord(new ConstantNode("0"));
+            //MemoryPool.AddRecord(new ConstantNode("1"));
             MemoryPool.ResolveOffsets();
             LabelCount = 0;
 
             RomPool = new _RomPool();
 
             var assembleList = Assemble(syntaxTreeNode);
+            assembleList.Add(new Instruction("exit"));            
 
             int ramSize = 4096;
             int heapStart = MemoryPool.HeapStartOffset;
@@ -270,6 +306,29 @@ namespace Astralbrew.CelestaSyntaxTreeCompiler
                     labelsCount++;
                 }
             }
+
+
+            assembleList = assembleList.RemoveDuplicateLabels();
+            // remove duplicate labels
+            for (int i = 0; i < assembleList.Count; i++)
+            {
+                if (assembleList[i] is Label label)
+                {
+                    var sameLabels = assembleList.Skip(i + 1).Where(x => (x is Label L) && (L.Offset == label.Offset));
+                    foreach (var l in sameLabels)
+                    {
+                        foreach(Instruction ins in assembleList.Where(x=>x is Instruction))
+                        {
+                            if (ins.Operand1 == l) ins.Operand1 = label;
+                            if (ins.Operand2 == l) ins.Operand2 = label;
+                        }
+                    }
+                }
+            }
+
+            assembleList = assembleList.Where(i => !(i is Label) || (i is Label
+                && assembleList.Any(x => (x is Instruction instr) && (instr.Operand1 == i || instr.Operand2 == i))))
+                .ToList();
 
             RomPool.Offset = assemblySize;
 
@@ -299,7 +358,7 @@ namespace Astralbrew.CelestaSyntaxTreeCompiler
                 }
                 return new AssembledCode(assembleList, ms.ToArray());
             }                       
-        }
+        }       
 
         public static CompilerContext TestCompiler
         {
@@ -330,6 +389,33 @@ namespace Astralbrew.CelestaSyntaxTreeCompiler
 
                 return ctx;
             }
+        }
+    }
+
+    static class IAssemblyItemListExtensions
+    {
+        public static List<IAssemblyItem> RemoveDuplicateLabels(this List<IAssemblyItem> items)
+        {
+            var assembleList = items.ToList();
+            for (int i = 0; i < assembleList.Count; i++)
+            {
+                if (assembleList[i] is Label label)
+                {
+                    var sameLabels = assembleList.Skip(i + 1).Where(x => (x is Label L) && (L.Offset == label.Offset));
+                    foreach (var l in sameLabels)
+                    {
+                        foreach (Instruction ins in assembleList.Where(x => x is Instruction))
+                        {
+                            if (ins.Operand1 == l) ins.Operand1 = label;
+                            if (ins.Operand2 == l) ins.Operand2 = label;
+                        }
+                    }
+                }
+            }
+
+            return assembleList.Where(i => !(i is Label) || (i is Label
+                && assembleList.Any(x => (x is Instruction instr) && (instr.Operand1 == i || instr.Operand2 == i))))
+                .ToList();
         }
     }
 }

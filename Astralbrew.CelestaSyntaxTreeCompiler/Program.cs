@@ -8,26 +8,21 @@ namespace Astralbrew.CelestaSyntaxTreeCompiler
 {
     internal class Program
     {
-        //static readonly Interpreter Interpreter = new Interpreter(RuntimeContext.DefaultRuntimeContext);
-        static readonly Interpreter Interpreter = new Interpreter(CompilerContext.TestCompiler);
+        //static readonly Interpreter Interpreter = new Interpreter(RuntimeContext.DefaultRuntimeContext);        
 
         static void Run(string input)
-        {
-            var ev = Interpreter.Evaluate(input) as AssembledCode;
-            ev.Items.ForEach(Console.WriteLine);
-            File.WriteAllBytes("result.out", ev.Binary);
-
-            //Console.WriteLine(Interpreter.Evaluate(input) ?? "<NULL>");
-            return;
-
-            try
-            {
-                Console.WriteLine(Interpreter.Evaluate(input) ?? "<NULL>");
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);                
-            }
+        {                        
+            //try
+            //{
+                var Interpreter = new Interpreter(CompilerContext.TestCompiler);
+                var ev = Interpreter.Evaluate(input) as AssembledCode;
+                ev.Items.ForEach(Console.WriteLine);
+                File.WriteAllBytes("result.out", ev.Binary);
+            //}
+            //catch (Exception e)
+            //{
+              //  Console.WriteLine(e.Message);                
+            //}
         }
 
         static void RunInteractiveInterpreter()

@@ -27,6 +27,7 @@ namespace Astralbrew.Celesta.Compiler.AST
         public ISyntaxTreeNode LeftHandSide { get; }        
         public ISyntaxTreeNode RightHandSide { get; }
 
+        public bool IsInExpression => !(Parent is BlockNode);
         public override string ToString() => $"{LeftHandSide} = {RightHandSide}";
     }
 }

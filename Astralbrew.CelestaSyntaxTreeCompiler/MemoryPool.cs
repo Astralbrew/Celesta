@@ -59,11 +59,13 @@ namespace Astralbrew.CelestaSyntaxTreeCompiler
         {
             get
             {
-                if (name.StartsWith("#"))
+                if (name.StartsWith("#")) 
                 {
                     var key = Records.Keys.Where(k => name.StartsWith(k)).FirstOrDefault();
                     if (key == null)
+                    {                        
                         throw new ArgumentException($"No record with name '{name}'");
+                    }
                     return Records[key];
                 }
                 return Records[name];

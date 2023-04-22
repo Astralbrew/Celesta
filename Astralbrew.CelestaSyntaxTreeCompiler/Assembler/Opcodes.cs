@@ -28,7 +28,11 @@ namespace Astralbrew.CelestaSyntaxTreeCompiler.Assembler
             "and", // 12
             "or",  // 13
 
-            "strcat", // 14
+            "strcat",  // 14
+            "strclone", // 15
+            
+            "dec", // 16
+            "zero", // 17
         };
 
         private static readonly string[] NonStackInstructions = new string[]
@@ -44,6 +48,7 @@ namespace Astralbrew.CelestaSyntaxTreeCompiler.Assembler
             "dealloc",  // 8
             "strld",    // 9
             "ld",       // 11            
+            "exit",     // 12
         };        
 
         public static byte GetOpcode(string instruction)
