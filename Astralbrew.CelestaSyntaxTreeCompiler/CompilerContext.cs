@@ -105,7 +105,7 @@ namespace Astralbrew.CelestaSyntaxTreeCompiler
                 var result = new List<IAssemblyItem> { new Instruction("push", new Symbol(v), null) };
 
                 if (v.OutputType == PrimitiveTypes.String && !(v.Parent is FunctionNode)) 
-                    result.Add(new Instruction("stack strclone"));
+                    result.Add(new Instruction("stack strcln"));
                 return result;
             }
 
@@ -114,7 +114,7 @@ namespace Astralbrew.CelestaSyntaxTreeCompiler
                 var result = new List<IAssemblyItem> { new Instruction("push", new Symbol(c), null) };
 
                 if (c.OutputType == PrimitiveTypes.String && !(c.Parent is FunctionNode))
-                    result.Add(new Instruction("stack strclone"));
+                    result.Add(new Instruction("stack strcln"));
 
                 return result;                
             }                
@@ -205,7 +205,12 @@ namespace Astralbrew.CelestaSyntaxTreeCompiler
                     if (assign.IsInExpression)
                         result.Add(new Instruction("peek", new Symbol(av)));
                     else
-                        result.Add(new Instruction("pop", new Symbol(av)));
+                    {
+                        if(av.OutputType == PrimitiveTypes.String)
+                            result.Add(new Instruction("pop strfix", new Symbol(av)));
+                        else
+                            result.Add(new Instruction("pop", new Symbol(av)));
+                    }
                 }
                 else
                 {
@@ -386,6 +391,7 @@ namespace Astralbrew.CelestaSyntaxTreeCompiler
                 ctx.RegisterInstruction("strcat", "+", "string", "string", "string");
 
                 ctx.RegisterSysCall(new FunctionDefinition("print", PrimitiveTypes.Void, PrimitiveTypes.String));
+                ctx.RegisterSysCall(new FunctionDefinition("randint", PrimitiveTypes.Integer));
 
                 return ctx;
             }

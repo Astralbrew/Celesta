@@ -29,10 +29,12 @@ namespace Astralbrew.CelestaSyntaxTreeCompiler.Assembler
             "or",  // 13
 
             "strcat",  // 14
-            "strclone", // 15
+            "strcln", // 15
             
             "dec", // 16
             "zero", // 17
+
+            "strfix", // 18
         };
 
         private static readonly string[] NonStackInstructions = new string[]

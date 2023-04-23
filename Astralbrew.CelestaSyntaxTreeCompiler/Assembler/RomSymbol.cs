@@ -37,8 +37,9 @@ namespace Astralbrew.CelestaSyntaxTreeCompiler.Assembler
                 using(var bw=new BinaryWriter(ms))
                 {
                     var bytes = Encoding.ASCII.GetBytes(val);
-                    bw.Write((ushort)bytes.Length);
+                    bw.Write((ushort)(bytes.Length + 1));
                     bw.Write(bytes);
+                    bw.Write(0);
                     return new RomSymbol(name, ms.ToArray());
                 }
             }            
